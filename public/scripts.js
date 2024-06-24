@@ -15,9 +15,23 @@ function handleFormSubmit(event) {
     const message = document.getElementById('message').value;
 
     if (name && email && message) {
-        alert('Thank you for contacting us, ' + name + '! We will get back to you soon.');
-        document.getElementById('contactForm').reset();
-        document.getElementById('contact-form').style.display = 'none';
+        fetch('/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, message }),
+        })
+        .then(response => response.text())
+        .then(data => {
+            alert('Thank you for contacting us, ' + name + '! We will get back to you soon.');
+            document.getElementById('contactForm').reset();
+            document.getElementById('contact-form').style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
     } else {
         alert('Please fill out all fields.');
     }
