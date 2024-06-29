@@ -1,39 +1,42 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Nodemailer transporter for Gmail
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS
-    }
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
 });
 
 app.post('/send-email', (req, res) => {
     const { name, email, message } = req.body;
 
     const mailOptions = {
-        to: 'kansoftltd.ng@gmail.com', // Your email address
         from: email,
-        subject: 'New Contact Form Submission',
-        text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
+        to: process.env.EMAIL_USER,
+        subject: `Contact Form Submission from ${name}`,
+        text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return res.status(500).send(error.toString());
+            console.log(error);
+            res.status(500).send('An error occurred while sending the email.');
+        } else {
+            console.log('Email sent: ' + info.response);
+            res.status(200).send('Email sent successfully.');
         }
-        res.send('Email sent successfully!');
     });
 });
 
